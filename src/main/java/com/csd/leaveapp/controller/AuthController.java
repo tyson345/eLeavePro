@@ -36,6 +36,14 @@ public class AuthController {
 
         HttpSession existingSession = request.getSession(false);
         if (existingSession != null) {
+            Object role = existingSession.getAttribute("role");
+            if (Role.HOD.name().equals(role)) {
+                return "redirect:/hod/dashboard";
+            }
+            if (Role.STUDENT.name().equals(role)) {
+                return "redirect:/student/dashboard";
+            }
+            // Only clear sessions that don't have a valid role.
             existingSession.invalidate();
         }
         return "login";
