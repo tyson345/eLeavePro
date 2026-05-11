@@ -1,4 +1,4 @@
-# CSD Leave Application (HTML + CSS + Java)
+# eLeavePro (HTML + CSS + Java)
 
 Dark-themed leave management system for the Department of Computer Science and Design.
 
