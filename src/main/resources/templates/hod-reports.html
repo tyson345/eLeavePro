@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>HOD Reports</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header"><div><h1>Department Progress</h1></div><a class="logout" href="/logout">Logout</a></header>
+    <nav class="tabs">
+        <a class="tab" href="/hod/dashboard">Overview</a>
+        <a class="tab" href="/hod/leaves">Leave Requests</a>
+        <a class="tab" href="/hod/students">Students & Marks</a>
+        <a class="tab active" href="/hod/reports">Department Reports</a>
+    </nav>
+    <section class="card modern-card report-toolbar">
+        <div class="report-switcher" role="tablist" aria-label="Report sections">
+            <button type="button" class="report-tab-btn active" data-report-target="semester-students">Semester Students</button>
+            <button type="button" class="report-tab-btn" data-report-target="department-trend">Department Trend</button>
+            <button type="button" class="report-tab-btn" data-report-target="semester-summary">Semester Summary</button>
+        </div>
+        <div class="toolbar-actions">
+            <form method="get" action="/hod/semester-records" class="inline-select toolbar-form">
+                <select name="semester" required>
+                    <option th:selected="${selectedSemester == 1}" value="1">Semester 1</option>
+                    <option th:selected="${selectedSemester == 2}" value="2">Semester 2</option>
+                    <option th:selected="${selectedSemester == 3}" value="3">Semester 3</option>
+                    <option th:selected="${selectedSemester == 4}" value="4">Semester 4</option>
+                    <option th:selected="${selectedSemester == 5}" value="5">Semester 5</option>
+                    <option th:selected="${selectedSemester == 6}" value="6">Semester 6</option>
+                    <option th:selected="${selectedSemester == 7}" value="7">Semester 7</option>
+                    <option th:selected="${selectedSemester == 8}" value="8">Semester 8</option>
+                </select>
+                <button type="submit">Load Semester</button>
+            </form>
+            <form method="get" action="/hod/student-progress" class="toolbar-progress-form">
+                <input id="studentQuickSearch" type="text" placeholder="Search student USN / name">
+                <select id="studentQuickSelect" name="usn" required>
+                    <option value="">Select Student</option>
+                    <option th:each="s : ${students}" th:value="${s.usn}" th:text="${s.usn} + ' - ' + ${s.name}"></option>
+                </select>
+                <button type="submit">Open Individual Progress</button>
+            </form>
+        </div>
+    </section>
+
+    <section class="card modern-card report-section active" id="semester-students">
+        <h2 th:text="'Semester ' + ${selectedSemester} + ' Student Report'"></h2>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                <tr>
+                    <th>USN</th>
+                    <th>Name</th>
+                    <th>Total Marks</th>
+                    <th>Acquired Marks</th>
+                    <th>SGPA</th>
+                    <th>CGPA</th>
+                    <th>Status</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="row : ${semesterRows}">
+                    <td th:text="${row.usn}"></td>
+                    <td th:text="${row.name}"></td>
+                    <td th:text="${row.totalMarks}"></td>
+                    <td th:text="${row.acquiredMarks}"></td>
+                    <td th:text="${#numbers.formatDecimal(row.sgpa, 1, 2)}"></td>
+                    <td th:text="${#numbers.formatDecimal(row.cgpa, 1, 2)}"></td>
+                    <td>
+                        <span class="trend-chip" th:classappend="${row.sgpa >= 8} ? 'up' : 'down'" th:text="${row.sgpa >= 8} ? 'Good' : 'Needs Improvement'"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <section class="card modern-card trend-interactive report-section" id="department-trend">
+        <h2>Whole Department Semester Trend (S1-S8)</h2>
+        <div class="kpi-strip" th:with="d=${deptTrend.overallDelta}">
+            <div class="kpi-pill">
+                <span>Sem 1 Avg SGPA</span>
+                <strong th:text="${#numbers.formatDecimal(deptTrend.firstSemAvg,1,2)}"></strong>
+            </div>
+            <div class="kpi-pill">
+                <span>Sem 8 Avg SGPA</span>
+                <strong th:text="${#numbers.formatDecimal(deptTrend.lastSemAvg,1,2)}"></strong>
+            </div>
+            <div class="kpi-pill">
+                <span>Overall Change</span>
+                <strong th:classappend="${d >= 0} ? ' up' : ' down'" th:text="${#numbers.formatDecimal(d,1,2)}"></strong>
+            </div>
+        </div>
+        <div class="trend-tooltip"></div>
+        <svg class="trend-svg" viewBox="0 0 620 260" preserveAspectRatio="none">
+            <g th:each="tick : ${deptTrend.yAxisTicks}">
+                <line x1="20" x2="600" th:attr="y1=${tick.y}, y2=${tick.y}" class="axis-grid"></line>
+                <text x="14" th:attr="y=${tick.y}" class="y-axis-label" text-anchor="end" dominant-baseline="middle" th:text="${tick.label}"></text>
+            </g>
+            <line x1="20" y1="220" x2="600" y2="220" class="axis"></line>
+            <line x1="20" y1="30" x2="20" y2="220" class="axis"></line>
+            <line class="hover-guide-line" x1="20" y1="30" x2="20" y2="220"></line>
+            <polyline class="trend-line" th:attr="points=${deptTrend.linePoints}"></polyline>
+            <polyline class="trend-line-hit" th:attr="points=${deptTrend.linePoints}"></polyline>
+            <circle class="hover-focus-point" cx="20" cy="220" r="6"></circle>
+            <g th:each="p : ${deptTrend.plotPoints}">
+                <circle class="trend-point-hit" th:attr="cx=${p.x}, cy=${p.y}, r=14, data-sem=${p.semester}, data-sgpa=${#numbers.formatDecimal(p.value,1,2)}"></circle>
+                <circle class="trend-point" th:attr="cx=${p.x}, cy=${p.y}, r=4"></circle>
+                <text th:attr="x=${p.x}, y=236" class="x-axis-label" text-anchor="middle" th:text="${'S' + p.semester}"></text>
+            </g>
+        </svg>
+    </section>
+
+    <section class="card modern-card report-section" id="semester-summary">
+        <h2>Semester-Wise Department Summary</h2>
+        <div class="table-scroll">
+            <table>
+                <thead>
+                <tr>
+                    <th>Semester</th>
+                    <th>Avg SGPA</th>
+                    <th>Avg Total Marks</th>
+                    <th>Avg Acquired Marks</th>
+                    <th>Trend</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="s : ${deptTrend.semesterSummary}">
+                    <td th:text="'Sem ' + ${s.semester}"></td>
+                    <td th:text="${#numbers.formatDecimal(s.avgSgpa,1,2)}"></td>
+                    <td th:text="${#numbers.formatDecimal(s.avgTotalMarks,1,0)}"></td>
+                    <td th:text="${#numbers.formatDecimal(s.avgAcquiredMarks,1,0)}"></td>
+                    <td>
+                        <span class="trend-chip"
+                              th:classappend="${s.trend == 'UP'} ? 'up' : (${s.trend == 'DOWN'} ? 'down' : 'flat')"
+                              th:text="${s.trend}"></span>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+<script src="/js/trend-chart.js"></script>
+<script>
+    const quickSearch = document.getElementById('studentQuickSearch');
+    const quickSelect = document.getElementById('studentQuickSelect');
+    const allStudents = Array.from(quickSelect.options).slice(1).map(o => ({ value: o.value, text: o.textContent }));
+
+    quickSearch.addEventListener('input', function () {
+        const q = this.value.trim().toLowerCase();
+        quickSelect.innerHTML = '<option value="">Select Student</option>';
+        allStudents
+            .filter(s => !q || s.text.toLowerCase().includes(q))
+            .forEach(s => {
+                const option = document.createElement('option');
+                option.value = s.value;
+                option.textContent = s.text;
+                quickSelect.appendChild(option);
+            });
+    });
+
+    const sectionButtons = Array.from(document.querySelectorAll('.report-tab-btn'));
+    const sections = Array.from(document.querySelectorAll('.report-section'));
+
+    function showReportSection(id) {
+        sections.forEach(section => section.classList.toggle('active', section.id === id));
+        sectionButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.reportTarget === id));
+    }
+
+    sectionButtons.forEach(btn => {
+        btn.addEventListener('click', () => showReportSection(btn.dataset.reportTarget));
+    });
+</script>
+<script src="/js/no-bfcache.js"></script>
+</body>
+</html>

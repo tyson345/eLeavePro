@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>HOD - Students & Marks</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div>
+            <h1>Student Management</h1>
+            <p class="subtitle" style="margin:0;">Update profiles and semester marks</p>
+        </div>
+        <a class="logout" href="/logout">Logout</a>
+    </header>
+    <nav class="tabs">
+        <a class="tab" href="/hod/dashboard">Overview</a>
+        <a class="tab" href="/hod/leaves">Leave Requests</a>
+        <a class="tab active" href="/hod/students">Students & Marks</a>
+        <a class="tab" href="/hod/reports">Department Reports</a>
+    </nav>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+    <p class="success" th:if="${success}" th:text="${success}"></p>
+    <section class="card modern-card finder-card">
+        <div class="finder-top">
+            <div>
+                <h2>Search Students</h2>
+                <p class="hint" style="margin:0;">Type USN or name. Click a row to fill the forms.</p>
+            </div>
+            <div class="search-row">
+                <input id="studentSearch" type="text" placeholder="e.g. 4PM22CG001 or ADITYA">
+                <button type="button" id="clearSearch" class="ghost-btn">Clear</button>
+            </div>
+        </div>
+
+        <div class="results-wrap" aria-label="Student search results">
+            <table class="results-table">
+                <thead>
+                <tr>
+                    <th>USN</th>
+                    <th>Name</th>
+                    <th>Sem</th>
+                    <th>CGPA</th>
+                    <th>Leave</th>
+                </tr>
+                </thead>
+                <tbody id="studentResultsBody">
+                <tr th:each="s : ${students}"
+                    class="student-result-row"
+                    tabindex="0"
+                    role="button"
+                    th:attr="
+                    data-usn=${s.usn},
+                    data-search=${s.usn} + ' ' + ${s.name},
+                    data-name=${s.name},
+                    data-sem=${s.semester},
+                    data-cgpa=${#numbers.formatDecimal(s.cgpa, 1, 2)},
+                    data-leave=${s.leaveBalance},
+                    data-total-1=${s.semesterRecords.get(0).totalMarks}, data-acquired-1=${s.semesterRecords.get(0).acquiredMarks}, data-sgpa-1=${s.semesterRecords.get(0).sgpa},
+                    data-total-2=${s.semesterRecords.get(1).totalMarks}, data-acquired-2=${s.semesterRecords.get(1).acquiredMarks}, data-sgpa-2=${s.semesterRecords.get(1).sgpa},
+                    data-total-3=${s.semesterRecords.get(2).totalMarks}, data-acquired-3=${s.semesterRecords.get(2).acquiredMarks}, data-sgpa-3=${s.semesterRecords.get(2).sgpa},
+                    data-total-4=${s.semesterRecords.get(3).totalMarks}, data-acquired-4=${s.semesterRecords.get(3).acquiredMarks}, data-sgpa-4=${s.semesterRecords.get(3).sgpa},
+                    data-total-5=${s.semesterRecords.get(4).totalMarks}, data-acquired-5=${s.semesterRecords.get(4).acquiredMarks}, data-sgpa-5=${s.semesterRecords.get(4).sgpa},
+                    data-total-6=${s.semesterRecords.get(5).totalMarks}, data-acquired-6=${s.semesterRecords.get(5).acquiredMarks}, data-sgpa-6=${s.semesterRecords.get(5).sgpa},
+                    data-total-7=${s.semesterRecords.get(6).totalMarks}, data-acquired-7=${s.semesterRecords.get(6).acquiredMarks}, data-sgpa-7=${s.semesterRecords.get(6).sgpa},
+                    data-total-8=${s.semesterRecords.get(7).totalMarks}, data-acquired-8=${s.semesterRecords.get(7).acquiredMarks}, data-sgpa-8=${s.semesterRecords.get(7).sgpa}">
+                    <td th:text="${s.usn}"></td>
+                    <td th:text="${s.name}"></td>
+                    <td th:text="${s.semester}"></td>
+                    <td th:text="${#numbers.formatDecimal(s.cgpa, 1, 2)}"></td>
+                    <td th:text="${s.leaveBalance}"></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    <p class="hint" id="selectionHint">Select a student to enable updates.</p>
+
+    <section class="form-split">
+        <div class="card modern-card form-card">
+            <h2>Update Student Profile</h2>
+            <form method="post" action="/hod/student/update" class="form" id="profileForm">
+                <label>USN</label>
+                <input id="profileUsn" type="text" name="usn" readonly required>
+
+                <label>Name</label>
+                <input id="profileName" type="text" name="name" required>
+
+                <label>Semester</label>
+                <input id="profileSem" type="number" name="semester" min="1" max="8" required>
+
+                <label>CGPA (auto from marks)</label>
+                <input id="profileCgpa" type="number" step="0.01" name="cgpa" readonly>
+
+                <label>Leave Balance (max 10)</label>
+                <input id="profileLeave" type="number" min="0" max="10" name="leaveBalance" required>
+
+                <button type="submit" id="profileSaveBtn" disabled>Save Profile</button>
+            </form>
+        </div>
+
+        <div class="card modern-card form-card">
+            <h2>Update Semester Marks</h2>
+            <form method="post" action="/hod/student/marks" class="form" id="marksForm">
+                <label>USN</label>
+                <input id="marksUsn" type="text" name="usn" readonly required>
+
+                <label>Semester</label>
+                <select id="marksSem" name="semester" required>
+                    <option value="1">Sem 1</option>
+                    <option value="2">Sem 2</option>
+                    <option value="3">Sem 3</option>
+                    <option value="4">Sem 4</option>
+                    <option value="5">Sem 5</option>
+                    <option value="6">Sem 6</option>
+                    <option value="7">Sem 7</option>
+                    <option value="8">Sem 8</option>
+                </select>
+
+                <label>Total Marks</label>
+                <input id="totalMarks" type="number" name="totalMarks" min="1" value="900" required>
+
+                <label>Acquired Marks</label>
+                <input id="acquiredMarks" type="number" name="acquiredMarks" min="0" required>
+
+                <label>SGPA (auto)</label>
+                <input id="sgpa" type="number" name="sgpa" step="0.01" min="0" max="10" required readonly>
+
+                <button type="submit" id="marksSaveBtn" disabled>Update Marks</button>
+            </form>
+        </div>
+    </section>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+<div id="preselectedUsn" style="display:none;" th:if="${selectedUsn != null}" th:attr="data-usn=${selectedUsn}"></div>
+
+<script>
+    const search = document.getElementById('studentSearch');
+    const clearSearch = document.getElementById('clearSearch');
+    const rows = Array.from(document.querySelectorAll('.student-result-row'));
+
+    const selectionHint = document.getElementById('selectionHint');
+
+    const profileUsn = document.getElementById('profileUsn');
+    const profileName = document.getElementById('profileName');
+    const profileSem = document.getElementById('profileSem');
+    const profileCgpa = document.getElementById('profileCgpa');
+    const profileLeave = document.getElementById('profileLeave');
+    const profileSaveBtn = document.getElementById('profileSaveBtn');
+
+    const marksUsn = document.getElementById('marksUsn');
+    const marksSem = document.getElementById('marksSem');
+    const totalMarks = document.getElementById('totalMarks');
+    const acquiredMarks = document.getElementById('acquiredMarks');
+    const sgpa = document.getElementById('sgpa');
+    const marksSaveBtn = document.getElementById('marksSaveBtn');
+
+    let selectedRow = null;
+    let selectedUsn = '';
+    let suppressCalc = false;
+
+    function calcSgpaFromMarks(total, acquired) {
+        const t = Number(total);
+        const a = Number(acquired);
+        if (!Number.isFinite(t) || !Number.isFinite(a) || t <= 0) return '';
+        const computed = (a / t) * 10;
+        const clamped = Math.max(0, Math.min(10, computed));
+        return Math.round(clamped * 100) / 100;
+    }
+
+    function validateAndEnable() {
+        const profileOk = !!(profileUsn.value && profileName.value && profileSem.value && profileLeave.value !== '');
+        profileSaveBtn.disabled = !profileOk;
+
+        const marksOk = !!(marksUsn.value && totalMarks.value !== '' && acquiredMarks.value !== '' && sgpa.value !== '');
+        marksSaveBtn.disabled = !marksOk;
+    }
+
+    function highlightRow() {
+        rows.forEach(r => r.classList.toggle('selected', r.dataset.usn === selectedUsn));
+    }
+
+    function fillMarksForSemester(sem) {
+        if (!selectedRow) return;
+
+        suppressCalc = true;
+        totalMarks.value = selectedRow.getAttribute('data-total-' + sem) ?? 900;
+        acquiredMarks.max = totalMarks.value;
+        acquiredMarks.value = selectedRow.getAttribute('data-acquired-' + sem) ?? '';
+        // Keep the stored SGPA initially; if user edits total/acquired we will recalculate.
+        sgpa.value = selectedRow.getAttribute('data-sgpa-' + sem) ?? '';
+        suppressCalc = false;
+        validateAndEnable();
+    }
+
+    function setSelected(usn) {
+        selectedUsn = usn;
+        selectedRow = rows.find(r => r.dataset.usn === usn) || null;
+        if (!selectedRow) return;
+
+        selectionHint.style.display = 'none';
+
+        profileUsn.value = usn;
+        profileName.value = selectedRow.getAttribute('data-name') ?? '';
+        profileSem.value = selectedRow.getAttribute('data-sem') || 1;
+        profileCgpa.value = selectedRow.getAttribute('data-cgpa') ?? 0;
+        profileLeave.value = selectedRow.getAttribute('data-leave') ?? 0;
+
+        marksUsn.value = usn;
+        // Start mark editing from student's current semester (matches what profile shows).
+        marksSem.value = profileSem.value;
+        highlightRow();
+
+        fillMarksForSemester(Number(marksSem.value));
+        validateAndEnable();
+    }
+
+    rows.forEach(r => {
+        const usn = r.dataset.usn;
+        r.addEventListener('click', () => setSelected(usn));
+        r.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                setSelected(usn);
+            }
+        });
+    });
+
+    marksSem.addEventListener('change', () => {
+        fillMarksForSemester(Number(marksSem.value));
+    });
+
+    function maybeRecalculateSgpa() {
+        if (!selectedUsn) return;
+        if (suppressCalc) return;
+
+        if (totalMarks.value !== '') {
+            acquiredMarks.max = totalMarks.value;
+        }
+        const total = totalMarks.value;
+        const acquired = acquiredMarks.value;
+        const computed = calcSgpaFromMarks(total, acquired);
+        sgpa.value = computed === '' ? '' : computed;
+        validateAndEnable();
+    }
+
+    totalMarks.addEventListener('input', maybeRecalculateSgpa);
+    acquiredMarks.addEventListener('input', maybeRecalculateSgpa);
+    // SGPA is read-only; recalculation happens when Total/Acquired changes.
+
+    clearSearch.addEventListener('click', () => {
+        search.value = '';
+        rows.forEach(r => (r.style.display = ''));
+        search.focus();
+    });
+
+    function filterRows(query) {
+        const q = query.trim().toLowerCase();
+        rows.forEach(r => {
+            const text = (r.dataset.search || '').toLowerCase();
+            const show = q === '' || text.includes(q);
+            r.style.display = show ? '' : 'none';
+        });
+    }
+
+    search.addEventListener('input', function () {
+        filterRows(this.value);
+
+        // If USN matches exactly, auto-select for faster workflow.
+        const q = (this.value || '').trim().toLowerCase();
+        if (!q) return;
+        const exactRow = rows.find(r => (r.dataset.usn || '').toLowerCase() === q);
+        if (exactRow) setSelected(exactRow.dataset.usn);
+    });
+
+    search.addEventListener('keydown', (e) => {
+        if (e.key !== 'Enter') return;
+
+        const firstVisible = rows.find(r => r.style.display !== 'none');
+        if (firstVisible) setSelected(firstVisible.dataset.usn);
+        e.preventDefault();
+    });
+
+    validateAndEnable();
+    const pre = document.getElementById('preselectedUsn');
+    const preselectedUsn = pre?.dataset?.usn;
+    if (preselectedUsn) setSelected(preselectedUsn);
+</script>
+<script src="/js/no-bfcache.js"></script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: leaveapp
+    env: docker
+    plan: free
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: AUTO_OPEN_BROWSER
+        value: false

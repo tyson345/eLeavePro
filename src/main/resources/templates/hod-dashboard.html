@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>HOD Dashboard</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div>
+            <h1>HOD Dashboard</h1>
+            <p>Department of Computer Science and Design</p>
+        </div>
+        <a class="logout" href="/logout">Logout</a>
+    </header>
+
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+    <p class="success" th:if="${success}" th:text="${success}"></p>
+
+    <section class="grid five">
+        <div class="card stat"><h3>Students</h3><p th:text="${report.studentCount}"></p></div>
+        <div class="card stat"><h3>Avg CGPA</h3><p th:text="${report.avgCgpa}"></p></div>
+        <div class="card stat"><h3>Approved</h3><p th:text="${report.approvedLeaves}"></p></div>
+        <div class="card stat"><h3>Pending</h3><p th:text="${report.pendingLeaves}"></p></div>
+        <div class="card stat"><h3>Total Leaves Left</h3><p th:text="${report.totalLeavesLeft}"></p></div>
+    </section>
+
+    <section class="card">
+        <h2>Pending and Processed Leave Requests</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>USN</th>
+                <th>Name</th>
+                <th>Dates</th>
+                <th>Days</th>
+                <th>Reason</th>
+                <th>Status</th>
+                <th>Action</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="req : ${requests}">
+                <td th:text="${req.id}"></td>
+                <td th:text="${req.studentUsn}"></td>
+                <td th:text="${req.studentName}"></td>
+                <td th:text="${req.fromDate} + ' to ' + ${req.toDate}"></td>
+                <td th:text="${req.numberOfDays}"></td>
+                <td th:text="${req.reason}"></td>
+                <td><span th:class="'badge ' + ${req.status.name().toLowerCase()}" th:text="${req.status}"></span></td>
+                <td>
+                    <form th:if="${req.status.name() == 'PENDING'}" method="post" action="/hod/leave/decision" class="inline-form">
+                        <input type="hidden" name="leaveId" th:value="${req.id}">
+                        <button type="submit" name="decision" value="APPROVE" class="approve">Approve</button>
+                        <button type="submit" name="decision" value="REJECT" class="reject">Reject</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="card">
+        <h2>Update Student Data</h2>
+        <div class="student-grid">
+            <form th:each="student : ${students}" method="post" action="/hod/student/update" class="student-edit-form">
+                <label>USN</label>
+                <input type="text" name="usn" th:value="${student.usn}" readonly>
+
+                <label>Name</label>
+                <input type="text" name="name" th:value="${student.name}" required>
+
+                <label>Semester</label>
+                <input type="number" name="semester" min="1" max="8" th:value="${student.semester}" required>
+
+                <label>CGPA</label>
+                <input type="number" step="0.01" min="0" max="10" name="cgpa" th:value="${#numbers.formatDecimal(student.cgpa, 1, 2)}" required>
+
+                <label>Leave Balance</label>
+                <input type="number" min="0" name="leaveBalance" th:value="${student.leaveBalance}" required>
+
+                <button type="submit">Update</button>
+            </form>
+        </div>
+    </section>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+<script src="/js/no-bfcache.js"></script>
+</body>
+</html>

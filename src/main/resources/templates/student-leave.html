@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Student Leave</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div><h1>Leave Center</h1><p th:text="${student.name} + ' - Balance: ' + ${student.leaveBalance} + ' days'"></p></div>
+        <a class="logout" href="/logout">Logout</a>
+    </header>
+    <nav class="tabs">
+        <a class="tab" href="/student/dashboard">Overview</a>
+        <a class="tab" href="/student/marks">Marks & CGPA</a>
+        <a class="tab active" href="/student/leave">Leave Center</a>
+    </nav>
+    <section class="card">
+        <h2>Apply Leave (Max 10 days only)</h2>
+        <form method="post" action="/student/apply-leave" class="form two-col">
+            <div><label>From Date</label><input type="date" name="fromDate" required></div>
+            <div><label>To Date</label><input type="date" name="toDate" required></div>
+            <div class="full"><label>Reason</label><textarea name="reason" rows="3" required></textarea></div>
+            <div class="full"><button type="submit">Submit to HOD</button></div>
+        </form>
+        <p class="error" th:if="${error}" th:text="${error}"></p>
+        <p class="success" th:if="${success}" th:text="${success}"></p>
+    </section>
+    <section class="card">
+        <h2>Leave Status</h2>
+        <p class="success" th:text="${decisionMessage}"></p>
+        <table>
+            <thead><tr><th>ID</th><th>From</th><th>To</th><th>Days</th><th>Reason</th><th>Status</th></tr></thead>
+            <tbody>
+            <tr th:each="req : ${requests}">
+                <td th:text="${req.id}"></td>
+                <td th:text="${req.fromDate}"></td>
+                <td th:text="${req.toDate}"></td>
+                <td th:text="${req.numberOfDays}"></td>
+                <td th:text="${req.reason}"></td>
+                <td><span th:class="'badge ' + ${req.status.name().toLowerCase()}" th:text="${req.status}"></span></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+<script src="/js/no-bfcache.js"></script>
+</body>
+</html>

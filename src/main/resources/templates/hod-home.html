@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>HOD Home</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div><h1>HOD Dashboard</h1><p>Department of Computer Science and Design</p></div>
+        <a class="logout" href="/logout">Logout</a>
+    </header>
+    <nav class="tabs">
+        <a class="tab active" href="/hod/dashboard">Overview</a>
+        <a class="tab" href="/hod/leaves">Leave Requests</a>
+        <a class="tab" href="/hod/students">Students & Marks</a>
+        <a class="tab" href="/hod/reports">Department Reports</a>
+    </nav>
+    <p class="success" th:text="${report.pendingNotification}"></p>
+
+    <section class="metric-cards">
+        <div class="card metric-card"><span>Total Students</span><strong th:text="${report.studentCount}"></strong></div>
+        <div class="card metric-card"><span>Average CGPA</span><strong th:text="${report.avgCgpa}"></strong></div>
+        <div class="card metric-card"><span>Approved Leaves</span><strong th:text="${report.approvedLeaves}"></strong></div>
+        <div class="card metric-card"><span>Pending Requests</span><strong th:text="${report.pendingLeaves}"></strong></div>
+        <div class="card metric-card"><span>Topper USN</span><strong th:text="${report.topperUsn}"></strong></div>
+        <div class="card metric-card"><span>Total Leaves Left</span><strong th:text="${report.totalLeavesLeft}"></strong></div>
+    </section>
+
+    <section class="dashboard-layout">
+        <section class="card chart-card" th:with="cut1=${report.approvedPct}, cut2=${report.approvedPct + report.pendingPct}">
+            <h2>Leave Decisions</h2>
+            <div class="pie-layout">
+                <div class="pie" th:style="'background:conic-gradient(#22c55e 0% ' + ${cut1} + '%, #f59e0b ' + ${cut1} + '% ' + ${cut2} + '%, #ef4444 ' + ${cut2} + '% 100%)'"></div>
+                <div class="legend">
+                    <p><span class="dot green"></span> Approved (<span th:text="${report.approvedLeaves}"></span>)</p>
+                    <p><span class="dot yellow"></span> Pending (<span th:text="${report.pendingLeaves}"></span>)</p>
+                    <p><span class="dot red"></span> Rejected (<span th:text="${report.rejectedLeaves}"></span>)</p>
+                </div>
+            </div>
+        </section>
+
+        <aside class="card side-profile">
+            <h3>Quick Actions</h3>
+            <p class="subtitle">Department shortcuts</p>
+            <div class="profile-metric"><span>Review Pending Leaves</span><strong th:text="${report.pendingLeaves}"></strong></div>
+            <div class="profile-metric"><span>Track Topper</span><strong th:text="${report.topperUsn}"></strong></div>
+            <div class="profile-metric"><span>Rejected Cases</span><strong th:text="${report.rejectedLeaves}"></strong></div>
+        </aside>
+    </section>
+
+    <section class="card">
+        <h2>Recent Leave Requests</h2>
+        <table>
+            <thead>
+            <tr><th>ID</th><th>USN</th><th>Name</th><th>Days</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+            <tr th:each="r,iter : ${requests}" th:if="${iter.index < 6}">
+                <td th:text="${r.id}"></td>
+                <td th:text="${r.studentUsn}"></td>
+                <td th:text="${r.studentName}"></td>
+                <td th:text="${r.numberOfDays}"></td>
+                <td><span class="badge" th:classappend="${#strings.toLowerCase(r.status.name())}" th:text="${r.status}"></span></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+<script src="/js/no-bfcache.js"></script>
+</body>
+</html>

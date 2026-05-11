@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Student Home</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <div>
+            <h1>Student Dashboard</h1>
+            <p th:text="'Welcome back, ' + ${student.name} + ' (' + ${student.usn} + ')'"></p>
+        </div>
+        <a class="logout" href="/logout">Logout</a>
+    </header>
+    <nav class="tabs">
+        <a class="tab active" href="/student/dashboard">Overview</a>
+        <a class="tab" href="/student/marks">Marks & CGPA</a>
+        <a class="tab" href="/student/leave">Leave Center</a>
+    </nav>
+
+    <section class="dashboard-layout">
+        <aside class="card side-profile">
+            <h3 th:text="${student.name}"></h3>
+            <p class="subtitle" th:text="${student.usn}"></p>
+            <div class="profile-metric">
+                <span>Current Semester</span>
+                <strong th:text="${student.semester} + ' / 8'"></strong>
+            </div>
+            <div class="profile-metric">
+                <span>Leave Left</span>
+                <strong th:text="${student.leaveBalance} + ' / 10'"></strong>
+            </div>
+            <div class="profile-metric">
+                <span>Used Leaves</span>
+                <strong th:text="${usedLeaves} + ' days'"></strong>
+            </div>
+            <p class="success" th:text="${decisionMessage}"></p>
+        </aside>
+
+        <div class="dashboard-main">
+            <section class="metric-cards">
+                <div class="card metric-card">
+                    <span>CGPA</span>
+                    <strong th:text="${#numbers.formatDecimal(student.cgpa, 1, 2)}"></strong>
+                </div>
+                <div class="card metric-card">
+                    <span>First Sem SGPA</span>
+                    <strong th:text="${#numbers.formatDecimal(studentTrend.firstSemSgpa,1,2)}"></strong>
+                </div>
+                <div class="card metric-card">
+                    <span>Latest SGPA</span>
+                    <strong th:text="${#numbers.formatDecimal(studentTrend.lastSemSgpa,1,2)}"></strong>
+                </div>
+                <div class="card metric-card" th:with="d=${studentTrend.overallDelta}">
+                    <span>Overall Trend</span>
+                    <strong th:classappend="${d >= 0} ? 'up-text' : 'down-text'" th:text="${#numbers.formatDecimal(d,1,2)}"></strong>
+                </div>
+            </section>
+
+            <section class="card modern-card trend-interactive student-dashboard-chart">
+                <h2>Semester Performance Trend</h2>
+                <div class="trend-tooltip" id="studentDashboardTooltip"></div>
+                <svg class="trend-svg" viewBox="0 0 620 260" preserveAspectRatio="none">
+                    <g th:each="tick : ${studentTrend.yAxisTicks}">
+                        <line x1="20" x2="600" th:attr="y1=${tick.y}, y2=${tick.y}" class="axis-grid"></line>
+                        <text x="14" th:attr="y=${tick.y}" class="y-axis-label" text-anchor="end" dominant-baseline="middle" th:text="${tick.label}"></text>
+                    </g>
+                    <line x1="20" y1="220" x2="600" y2="220" class="axis"></line>
+                    <line x1="20" y1="30" x2="20" y2="220" class="axis"></line>
+                    <line class="hover-guide-line" x1="20" y1="30" x2="20" y2="220"></line>
+                    <polyline class="trend-line" th:attr="points=${studentTrend.linePoints}"></polyline>
+                    <polyline class="trend-line-hit" th:attr="points=${studentTrend.linePoints}"></polyline>
+                    <circle class="hover-focus-point" cx="20" cy="220" r="6"></circle>
+                    <g th:each="p : ${studentTrend.plotPoints}">
+                        <circle class="trend-point-hit" th:attr="cx=${p.x}, cy=${p.y}, r=14, data-sem=${p.semester}, data-sgpa=${#numbers.formatDecimal(p.value,1,2)}"></circle>
+                        <circle class="trend-point" th:attr="cx=${p.x}, cy=${p.y}, r=4"></circle>
+                        <text th:attr="x=${p.x}, y=236" class="x-axis-label" text-anchor="middle" th:text="${'S' + p.semester}"></text>
+                    </g>
+                </svg>
+            </section>
+
+            <section class="card">
+                <h2>Academic Snapshot</h2>
+                <div class="metric-row">
+                    <span>Leave Usage</span>
+                    <div class="progress-wrap"><div class="progress-fill red" th:style="'width:' + (${usedLeaves} * 10) + '%'"></div></div>
+                    <span th:text="${usedLeaves} + ' / 10 days'"></span>
+                </div>
+                <div class="metric-row">
+                    <span>CGPA Strength</span>
+                    <div class="progress-wrap"><div class="progress-fill" th:style="'width:' + (${student.cgpa} * 10) + '%'"></div></div>
+                    <span th:text="${#numbers.formatDecimal(student.cgpa, 1, 2)} + ' / 10'"></span>
+                </div>
+            </section>
+        </div>
+    </section>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+<script src="/js/trend-chart.js"></script>
+<script src="/js/no-bfcache.js"></script>
+</body>
+</html>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>Student Progress</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header"><div><h1>Individual Student Progress</h1></div><a class="logout" href="/logout">Logout</a></header>
+    <nav class="tabs">
+        <a class="tab" href="/hod/dashboard">Overview</a>
+        <a class="tab" href="/hod/leaves">Leave Requests</a>
+        <a class="tab" href="/hod/students">Students & Marks</a>
+        <a class="tab active" href="/hod/reports">Department Reports</a>
+    </nav>
+    <section class="card modern-card trend-interactive" th:if="${selectedStudent}" th:with="d=${selectedStudentTrend.overallDelta}">
+        <h2 th:text="${selectedStudent.name} + ' (' + ${selectedStudent.usn} + ')'"></h2>
+        <p class="subtitle" th:text="'CGPA: ' + ${#numbers.formatDecimal(selectedStudent.cgpa, 1, 2)} + ' | Leave Left: ' + ${selectedStudent.leaveBalance}"></p>
+        <div class="kpi-strip">
+            <div class="kpi-pill"><span>Sem 1 SGPA</span><strong th:text="${#numbers.formatDecimal(selectedStudentTrend.firstSemSgpa,1,2)}"></strong></div>
+            <div class="kpi-pill"><span>Sem 8 SGPA</span><strong th:text="${#numbers.formatDecimal(selectedStudentTrend.lastSemSgpa,1,2)}"></strong></div>
+            <div class="kpi-pill"><span>Overall Change</span><strong th:classappend="${d>=0} ? 'up' : 'down'" th:text="${#numbers.formatDecimal(d,1,2)}"></strong></div>
+        </div>
+        <div class="trend-tooltip"></div>
+        <svg class="trend-svg" viewBox="0 0 620 260" preserveAspectRatio="none">
+            <g th:each="tick : ${selectedStudentTrend.yAxisTicks}">
+                <line x1="20" x2="600" th:attr="y1=${tick.y}, y2=${tick.y}" class="axis-grid"></line>
+                <text x="14" th:attr="y=${tick.y}" class="y-axis-label" text-anchor="end" dominant-baseline="middle" th:text="${tick.label}"></text>
+            </g>
+            <line x1="20" y1="220" x2="600" y2="220" class="axis"></line>
+            <line x1="20" y1="30" x2="20" y2="220" class="axis"></line>
+            <line class="hover-guide-line" x1="20" y1="30" x2="20" y2="220"></line>
+            <polyline class="trend-line" th:attr="points=${selectedStudentTrend.linePoints}"></polyline>
+            <polyline class="trend-line-hit" th:attr="points=${selectedStudentTrend.linePoints}"></polyline>
+            <circle class="hover-focus-point" cx="20" cy="220" r="6"></circle>
+            <g th:each="p : ${selectedStudentTrend.plotPoints}">
+                <circle class="trend-point-hit" th:attr="cx=${p.x}, cy=${p.y}, r=14, data-sem=${p.semester}, data-sgpa=${#numbers.formatDecimal(p.value,1,2)}"></circle>
+                <circle class="trend-point" th:attr="cx=${p.x}, cy=${p.y}, r=4"></circle>
+                <text th:attr="x=${p.x}, y=236" class="x-axis-label" text-anchor="middle" th:text="${'S' + p.semester}"></text>
+            </g>
+        </svg>
+        <table>
+            <thead><tr><th>Sem</th><th>Total Marks</th><th>Acquired Marks</th><th>SGPA</th><th>Running CGPA</th><th>Trend</th></tr></thead>
+            <tbody>
+            <tr th:each="m : ${selectedStudentTrend.semesterDetails}">
+                <td th:text="${m.semester}"></td>
+                <td th:text="${m.totalMarks}"></td>
+                <td th:text="${m.acquiredMarks}"></td>
+                <td th:text="${#numbers.formatDecimal(m.sgpa, 1, 2)}"></td>
+                <td th:text="${#numbers.formatDecimal(m.runningCgpa, 1, 2)}"></td>
+                <td><span class="trend-chip" th:classappend="${m.trend == 'UP'} ? 'up' : (${m.trend == 'DOWN'} ? 'down' : 'flat')" th:text="${m.trend}"></span></td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+    <section class="card" th:unless="${selectedStudent}">
+        <h2>No Student Selected</h2>
+        <p>Select a student from reports page.</p>
+    </section>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+<script src="/js/trend-chart.js"></script>
+<script src="/js/no-bfcache.js"></script>
+</body>
+</html>

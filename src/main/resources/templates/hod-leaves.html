@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>HOD Leave Requests</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <header class="header"><div><h1>Leave Approval Desk</h1></div><a class="logout" href="/logout">Logout</a></header>
+    <nav class="tabs">
+        <a class="tab" href="/hod/dashboard">Overview</a>
+        <a class="tab active" href="/hod/leaves">Leave Requests</a>
+        <a class="tab" href="/hod/students">Students & Marks</a>
+        <a class="tab" href="/hod/reports">Department Reports</a>
+    </nav>
+    <p class="error" th:if="${error}" th:text="${error}"></p>
+    <p class="success" th:if="${success}" th:text="${success}"></p>
+    <section class="card">
+        <table>
+            <thead><tr><th>ID</th><th>USN</th><th>Name</th><th>Dates</th><th>Days</th><th>Reason</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody>
+            <tr th:each="req : ${requests}">
+                <td th:text="${req.id}"></td>
+                <td th:text="${req.studentUsn}"></td>
+                <td th:text="${req.studentName}"></td>
+                <td th:text="${req.fromDate} + ' to ' + ${req.toDate}"></td>
+                <td th:text="${req.numberOfDays}"></td>
+                <td th:text="${req.reason}"></td>
+                <td><span th:class="'badge ' + ${req.status.name().toLowerCase()}" th:text="${req.status}"></span></td>
+                <td>
+                    <form th:if="${req.status.name() == 'PENDING'}" method="post" action="/hod/leave/decision" class="inline-form">
+                        <input type="hidden" name="leaveId" th:value="${req.id}">
+                        <button type="submit" name="decision" value="APPROVE" class="approve">Approve</button>
+                        <button type="submit" name="decision" value="REJECT" class="reject">Reject</button>
+                    </form>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </section>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+<script src="/js/no-bfcache.js"></script>
+</body>
+</html>

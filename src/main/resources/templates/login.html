@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>CSD Leave App - Login</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container center">
+    <div class="card">
+        <h1>CSD Leave App</h1>
+        <p class="subtitle">Department of Computer Science and Design</p>
+        <form method="post" action="/login" class="form" id="loginForm" autocomplete="off">
+            <label>USN</label>
+            <input type="text" name="usn" required autocomplete="off">
+
+            <label>Password</label>
+            <input type="password" name="password" required autocomplete="new-password">
+
+            <label>Role</label>
+            <select name="role" required autocomplete="off">
+                <option value="STUDENT">Student</option>
+                <option value="HOD">HOD</option>
+            </select>
+
+            <button type="submit">Sign In</button>
+        </form>
+        <p class="error" th:if="${error}" th:text="${error}"></p>
+        <p class="success" th:if="${success}" th:text="${success}"></p>
+        <p>New student? <a href="/signup">Sign Up</a></p>
+        <!-- <div class="hint">
+            <p>Demo HOD Login: USN `CSDHOD001` / Password `hod123`</p>
+            <p>Student example: USN `4PM22CG001` / Password `student123`</p>
+        </div> -->
+    </div>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+<script>
+    (function () {
+        function clearLoginForm() {
+            const form = document.getElementById("loginForm");
+            if (!form) return;
+            form.reset();
+            const usn = form.querySelector('input[name="usn"]');
+            const password = form.querySelector('input[name="password"]');
+            const role = form.querySelector('select[name="role"]');
+            if (usn) usn.value = "";
+            if (password) password.value = "";
+            if (role) role.value = "STUDENT";
+        }
+
+        window.addEventListener("pageshow", function () {
+            clearLoginForm();
+        });
+
+        document.addEventListener("DOMContentLoaded", function () {
+            clearLoginForm();
+        });
+    })();
+</script>
+</body>
+</html>

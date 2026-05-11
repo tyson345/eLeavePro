@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSD Leave App - Sign Up</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container center">
+    <div class="card">
+        <h1>Student Sign Up</h1>
+        <p class="subtitle">Use only your department USN. CGPA/marks are updated by HOD.</p>
+        <form method="post" action="/signup" class="form">
+            <label>USN</label>
+            <input type="text" name="usn" required>
+
+            <label>Password</label>
+            <input type="password" name="password" required>
+
+            <button type="submit">Sign Up</button>
+        </form>
+        <p class="error" th:if="${error}" th:text="${error}"></p>
+        <p>Already have account? <a href="/login">Login</a></p>
+    </div>
+</div>
+<footer class="page-footer">&copy; Sourabh patil Computer science and design dept 2022-2026</footer>
+</body>
+</html>
