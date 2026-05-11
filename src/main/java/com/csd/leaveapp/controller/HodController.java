@@ -26,6 +26,12 @@ public class HodController {
         return "hod-home";
     }
 
+    // Common typo safeguard (prevents "Not Found" if user types URL manually)
+    @GetMapping("/hod/dashbaord")
+    public String dashboardTypoRedirect() {
+        return "redirect:/hod/dashboard";
+    }
+
     @GetMapping("/hod/leaves")
     public String leavesPage(HttpSession session, Model model) {
         if (!loadCommonData(session, model)) {

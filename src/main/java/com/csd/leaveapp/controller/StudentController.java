@@ -28,6 +28,12 @@ public class StudentController {
         return "student-home";
     }
 
+    // Common typo safeguard (prevents "Not Found" if user types URL manually)
+    @GetMapping("/student/dashbaord")
+    public String dashboardTypoRedirect() {
+        return "redirect:/student/dashboard";
+    }
+
     @GetMapping("/student/leave")
     public String leavePage(HttpSession session, Model model) {
         if (!loadStudentModel(session, model)) {
